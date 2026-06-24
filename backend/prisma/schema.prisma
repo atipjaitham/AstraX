@@ -27,10 +27,13 @@ model User {
   updatedAt DateTime @updatedAt
 
   profile Profile?
+
+  missions     UserMission[]
+  achievements UserAchievement[]
 }
 
 model Profile {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   displayName String?
   avatarUrl   String?
 
@@ -42,4 +45,83 @@ model Profile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Planet {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  order       Int
+
+  missions Mission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Mission {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  xpReward    Int     @default(100)
+
+  difficulty Difficulty @default(BEGINNER)
+
+  planetId String
+  planet   Planet @relation(fields: [planetId], references: [id])
+
+  users UserMission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserMission {
+  id String @id @default(uuid())
+
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  userId    String
+  missionId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  mission Mission @relation(fields: [missionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, missionId])
+}
+
+model Achievement {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+
+  xpReward Int @default(0)
+
+  users UserAchievement[]
+
+  createdAt DateTime @default(now())
+}
+
+model UserAchievement {
+  id String @id @default(uuid())
+
+  userId        String
+  achievementId String
+
+  unlockedAt DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
 }
