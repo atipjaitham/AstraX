@@ -57,4 +57,42 @@ export class AuthService {
       },
     };
   }
+    async login(email: string, password: string) {
+    const user = await this.usersService.findByEmail(
+        email,
+    );
+
+    if (!user) {
+        throw new BadRequestException(
+        'Invalid email or password',
+        );
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+        password,
+        user.passwordHash,
+    );
+
+    if (!isPasswordValid) {
+        throw new BadRequestException(
+        'Invalid email or password',
+        );
+    }
+
+    const accessToken =
+        await this.jwtService.signAsync({
+        sub: user.id,
+        email: user.email,
+        });
+
+    return {
+        accessToken,
+        user: {
+        id: user.id,
+        email: user.email,
+        displayName:
+            user.profile?.displayName,
+        },
+    };
+    }
 }
